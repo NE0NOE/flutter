@@ -23,6 +23,7 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:wger/core/media_cache_service.dart';
 import 'package:wger/features/account/models/user_profile.dart';
 import 'package:wger/features/exercises/models/exercise.dart';
 import 'package:wger/features/exercises/providers/exercises_notifier.dart';
@@ -638,6 +639,82 @@ void main() {
 
       // Assert: a single shared roundtrip, not one per reader.
       verify(mockRepo.fetchAndSetRoutineFullServer(101)).called(1);
+    });
+
+    test('prefetchRoutineMedia collects images and videos and requests download', () async {
+      final fakeDir = await Directory.systemTemp.createTemp('prefetch_test_');
+      addTearDown(() => fakeDir.delete(recursive: true));
+
+      final testMediaService = MediaCacheService(
+        getStorageDir: () async => fakeDir,
+        initialStorageDir: fakeDir,
+      );
+
+      final exerciseWithMedia = testBenchPress.copyWith(
+        images: [
+          ExerciseImage(
+            id: 10,
+            uuid: 'img-10',
+            exerciseId: testBenchPress.id,
+            image: 'exercise-images/1/bench.png',
+            isMain: true,
+            isAiGenerated: false,
+            style: ExerciseImageStyle.photo,
+            width: 100,
+            height: 100,
+            created: DateTime.now(),
+            lastUpdate: DateTime.now(),
+            licenseId: 1,
+            licenseTitle: 'CC',
+            licenseObjectUrl: '',
+            licenseAuthor: 'wger',
+            licenseAuthorUrl: '',
+            licenseDerivativeSourceUrl: '',
+          ),
+        ],
+        videos: [
+          Video(
+            id: 20,
+            uuid: 'vid-20',
+            exerciseId: testBenchPress.id,
+            isMain: true,
+            video: 'exercise-videos/1/bench.mp4',
+            size: 1000,
+            duration: 5,
+            width: 1920,
+            height: 1080,
+            codec: 'h264',
+            codecLong: 'h264',
+            created: DateTime.now(),
+            lastUpdate: DateTime.now(),
+            licenseId: 1,
+            licenseTitle: 'CC',
+            licenseObjectUrl: '',
+            licenseAuthor: 'wger',
+            licenseAuthorUrl: '',
+            licenseDerivativeSourceUrl: '',
+          ),
+        ],
+      );
+
+      final routine = getTestRoutine(exercises: [exerciseWithMedia]);
+
+      final container = ProviderContainer.test(
+        overrides: [
+          routinesRepositoryProvider.overrideWithValue(mockRepo),
+          mediaCacheServiceProvider.overrideWithValue(testMediaService),
+          ...ambientOverrides(),
+        ],
+      );
+
+      final notifier = container.read(routinesRiverpodProvider.notifier);
+      await notifier.prefetchRoutineMedia(routine);
+
+      // Verify that getFileForPath can construct paths for both exercise image and video
+      final cachedImageFile = testMediaService.getFileForPath('exercise-images/1/bench.png');
+      final cachedVideoFile = testMediaService.getFileForPath('exercise-videos/1/bench.mp4');
+      expect(cachedImageFile.path, contains('exercise-images/1/bench.png'));
+      expect(cachedVideoFile.path, contains('exercise-videos/1/bench.mp4'));
     });
   });
 }

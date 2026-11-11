@@ -22,6 +22,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:wger/core/build_safety.dart';
 import 'package:wger/core/consts.dart';
 import 'package:wger/core/helpers.dart';
+import 'package:wger/core/media_cache_service.dart';
+import 'package:wger/core/network/wger_base.dart';
 import 'package:wger/features/account/providers/user_profile_notifier.dart';
 import 'package:wger/features/exercises/providers/exercises_notifier.dart';
 import 'package:wger/features/routines/models/day.dart';
@@ -214,6 +216,63 @@ class RoutinesRiverpod extends _$RoutinesRiverpod {
     hydrateSetConfigs(routine.dayDataGym);
   }
 
+  /// Downloads all media (images, GIFs, videos) for exercises used in [routine]
+  /// to local persistent storage so they display with no network connection.
+  Future<void> prefetchRoutineMedia(Routine routine) async {
+    final mediaPaths = <String>{};
+
+    void collectFromExercise(dynamic exercise) {
+      if (exercise == null) return;
+      for (final img in exercise.images) {
+        if (img.image != null && img.image.isNotEmpty) {
+          mediaPaths.add(img.image);
+        }
+      }
+      for (final vid in exercise.videos) {
+        if (vid.video != null && vid.video.isNotEmpty) {
+          mediaPaths.add(vid.video);
+        }
+      }
+    }
+
+    for (final day in routine.days) {
+      for (final slot in day.slots) {
+        for (final entry in slot.entries) {
+          collectFromExercise(entry.exerciseObjOrNull);
+        }
+        for (final ex in slot.exercisesObj) {
+          collectFromExercise(ex);
+        }
+      }
+    }
+
+    for (final dayData in [...routine.dayData, ...routine.dayDataGym]) {
+      for (final slot in dayData.slots) {
+        for (final setConfig in slot.setConfigs) {
+          collectFromExercise(setConfig.exercise);
+        }
+      }
+    }
+
+    for (final session in routine.sessions) {
+      for (final log in session.logs) {
+        collectFromExercise(log.exercise);
+      }
+    }
+
+    if (mediaPaths.isEmpty) {
+      return;
+    }
+
+    try {
+      final cacheService = ref.read(mediaCacheServiceProvider);
+      final urlBuilder = ref.read(mediaUrlBuilderProvider);
+      await cacheService.prefetchMediaPaths(mediaPaths, urlBuilder);
+    } catch (e, st) {
+      _logger.warning('Failed to prefetch routine media: $e', e, st);
+    }
+  }
+
   /// Re-runs hydration on the current state and re-emits it. Triggered by
   /// `ref.listen` on the upstream reference-data providers (sessions,
   /// exercises, repetition/weight units).
@@ -249,6 +308,7 @@ class RoutinesRiverpod extends _$RoutinesRiverpod {
         return byStart != 0 ? byStart : b.created.compareTo(a.created);
       });
     state = AsyncData(current.copyWith(routines: routines));
+    unawaited(prefetchRoutineMedia(created));
     return created;
   }
 
@@ -296,6 +356,8 @@ class RoutinesRiverpod extends _$RoutinesRiverpod {
     }
     state = AsyncData(current.copyWith(routines: updatedRoutines));
 
+    unawaited(prefetchRoutineMedia(routine));
+
     return routine;
   }
 
@@ -311,6 +373,7 @@ class RoutinesRiverpod extends _$RoutinesRiverpod {
     // Local state picks up the change on the next stream emission.
     final repo = ref.read(routinesRepositoryProvider);
     await repo.editLocalDrift(routine);
+    unawaited(prefetchRoutineMedia(routine));
   }
 
   /*

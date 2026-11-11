@@ -38,6 +38,7 @@ import 'package:wger/core/keys.dart';
 import 'package:wger/core/locale.dart';
 import 'package:wger/core/log_file_store.dart';
 import 'package:wger/core/logs.dart';
+import 'package:wger/core/media_cache_service.dart';
 import 'package:wger/core/network/auth_notifier.dart';
 import 'package:wger/core/network/auth_state.dart';
 import 'package:wger/core/powersync_unreachable_screen.dart';
@@ -132,6 +133,9 @@ void main() async {
   // Picks up the entries of the previous run and starts a new file for this
   // one. The records logged until here are buffered and land in it as well.
   await initPersistentLogs();
+
+  // Initialize persistent routine media cache directory
+  await initMediaCache();
 
   // Seed the certificate opt-in from the prefs so the auto-login probe already
   // honours it; AppSettingsNotifier keeps it in sync from here on.

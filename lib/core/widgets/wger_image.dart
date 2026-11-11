@@ -19,6 +19,7 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:wger/core/media_cache_service.dart';
 import 'package:wger/core/network/wger_base.dart';
 import 'package:wger/core/widgets/image.dart';
 import 'package:wger/core/widgets/progress_indicator.dart';
@@ -73,6 +74,30 @@ class WgerImage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // If the media was pre-downloaded to persistent local storage (e.g. for an offline routine),
+    // render directly from local disk.
+    final cachedFile = ref.watch(mediaCacheServiceProvider).getCachedFile(mediaPath);
+    if (cachedFile != null) {
+      final fileImage = ExtendedImage.file(
+        cachedFile,
+        width: width,
+        height: height,
+        fit: fit,
+        clearMemoryCacheWhenDispose: false,
+        loadStateChanged: (state) {
+          switch (state.extendedImageLoadState) {
+            case LoadState.loading:
+              return _sized(placeholder ?? const CenteredProgressIndicator());
+            case LoadState.failed:
+              return _sized(errorWidget ?? const ImageError('Failed to load local media'));
+            case LoadState.completed:
+              return null;
+          }
+        },
+      );
+      return _wrapClip(fileImage);
+    }
+
     final url = ref.watch(mediaUrlBuilderProvider)(mediaPath);
     if (url == null) {
       return _wrapClip(_sized(errorWidget ?? const ImageError('')));

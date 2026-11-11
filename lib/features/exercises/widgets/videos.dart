@@ -23,6 +23,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wger/core/error_dialogs.dart';
 import 'package:wger/core/exceptions/http_exception.dart';
+import 'package:wger/core/media_cache_service.dart';
 import 'package:wger/core/network/wger_base.dart';
 import 'package:wger/features/exercises/models/video.dart';
 
@@ -52,6 +53,13 @@ class _ExerciseVideoWidgetState extends ConsumerState<ExerciseVideoWidget> {
     if (_controller != null) {
       return;
     }
+    final cachedFile = ref.read(mediaCacheServiceProvider).getCachedFile(widget.video.video);
+    if (cachedFile != null) {
+      _controller = VideoPlayerController.file(cachedFile);
+      _initializeVideo();
+      return;
+    }
+
     final uri = ref.read(mediaUrlBuilderProvider)(widget.video.video);
     if (uri == null) {
       hasError = true;
