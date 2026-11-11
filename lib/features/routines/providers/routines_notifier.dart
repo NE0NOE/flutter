@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -222,7 +224,9 @@ class RoutinesRiverpod extends _$RoutinesRiverpod {
     final mediaPaths = <String>{};
 
     void collectFromExercise(dynamic exercise) {
-      if (exercise == null) return;
+      if (exercise == null) {
+        return;
+      }
       for (final img in exercise.images) {
         if (img.image != null && img.image.isNotEmpty) {
           mediaPaths.add(img.image);
@@ -240,23 +244,19 @@ class RoutinesRiverpod extends _$RoutinesRiverpod {
         for (final entry in slot.entries) {
           collectFromExercise(entry.exerciseObjOrNull);
         }
-        for (final ex in slot.exercisesObj) {
-          collectFromExercise(ex);
-        }
+        slot.exercisesObj.forEach(collectFromExercise);
       }
     }
 
     for (final dayData in [...routine.dayData, ...routine.dayDataGym]) {
       for (final slot in dayData.slots) {
-        for (final setConfig in slot.setConfigs) {
-          collectFromExercise(setConfig.exercise);
-        }
+        slot.setConfigs.map((c) => c.exercise).forEach(collectFromExercise);
       }
     }
 
     for (final session in routine.sessions) {
       for (final log in session.logs) {
-        collectFromExercise(log.exercise);
+        collectFromExercise(log.exerciseObjOrNull);
       }
     }
 

@@ -17,15 +17,21 @@
  */
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:wger/core/media_cache_service.dart';
+import 'package:wger/core/network/wger_base.dart';
 import 'package:wger/features/account/models/user_profile.dart';
 import 'package:wger/features/exercises/models/exercise.dart';
+import 'package:wger/features/exercises/models/image.dart';
+import 'package:wger/features/exercises/models/video.dart';
 import 'package:wger/features/exercises/providers/exercises_notifier.dart';
 import 'package:wger/features/routines/models/day.dart';
 import 'package:wger/features/routines/models/day_data.dart';
@@ -645,7 +651,12 @@ void main() {
       final fakeDir = await Directory.systemTemp.createTemp('prefetch_test_');
       addTearDown(() => fakeDir.delete(recursive: true));
 
+      final requested = <Uri>[];
       final testMediaService = MediaCacheService(
+        client: MockClient((request) async {
+          requested.add(request.url);
+          return http.Response('bytes', 200);
+        }),
         getStorageDir: () async => fakeDir,
         initialStorageDir: fakeDir,
       );
@@ -697,12 +708,17 @@ void main() {
         ],
       );
 
-      final routine = getTestRoutine(exercises: [exerciseWithMedia]);
+      final routine = getTestRoutine(
+        exercises: [exerciseWithMedia, ...getTestExercises().skip(1)],
+      );
 
       final container = ProviderContainer.test(
         overrides: [
           routinesRepositoryProvider.overrideWithValue(mockRepo),
           mediaCacheServiceProvider.overrideWithValue(testMediaService),
+          mediaUrlBuilderProvider.overrideWithValue(
+            (path) => Uri.parse('https://example.test/media/$path'),
+          ),
           ...ambientOverrides(),
         ],
       );
@@ -710,11 +726,15 @@ void main() {
       final notifier = container.read(routinesRiverpodProvider.notifier);
       await notifier.prefetchRoutineMedia(routine);
 
-      // Verify that getFileForPath can construct paths for both exercise image and video
-      final cachedImageFile = testMediaService.getFileForPath('exercise-images/1/bench.png');
-      final cachedVideoFile = testMediaService.getFileForPath('exercise-videos/1/bench.mp4');
-      expect(cachedImageFile.path, contains('exercise-images/1/bench.png'));
-      expect(cachedVideoFile.path, contains('exercise-videos/1/bench.mp4'));
+      expect(
+        requested.map((u) => u.toString()),
+        unorderedEquals([
+          'https://example.test/media/exercise-images/1/bench.png',
+          'https://example.test/media/exercise-videos/1/bench.mp4',
+        ]),
+      );
+      expect(testMediaService.getCachedFile('exercise-images/1/bench.png'), isNotNull);
+      expect(testMediaService.getCachedFile('exercise-videos/1/bench.mp4'), isNotNull);
     });
   });
 }

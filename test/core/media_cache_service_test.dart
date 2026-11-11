@@ -51,7 +51,9 @@ void main() {
       final file1 = service.getFileForPath('/exercise-images/1/test.png?v=123');
       expect(file1.path, equals('${tempDir.path}/exercise-images/1/test.png'));
 
-      final file2 = service.getFileForPath('https://example.com/media/exercise-videos/42/video.mp4');
+      final file2 = service.getFileForPath(
+        'https://example.com/media/exercise-videos/42/video.mp4',
+      );
       expect(file2.path, equals('${tempDir.path}/media/exercise-videos/42/video.mp4'));
     });
 

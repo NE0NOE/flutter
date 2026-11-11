@@ -45,9 +45,9 @@ class MediaCacheService {
     http.Client? client,
     Future<Directory> Function()? getStorageDir,
     Directory? initialStorageDir,
-  })  : _client = client ?? http.Client(),
-        _getStorageDir = getStorageDir ?? _defaultStorageDir,
-        _storageDir = initialStorageDir ?? cachedStorageDir;
+  }) : _client = client ?? http.Client(),
+       _getStorageDir = getStorageDir ?? _defaultStorageDir,
+       _storageDir = initialStorageDir ?? cachedStorageDir;
 
   static Future<Directory> _defaultStorageDir() async {
     final supportDir = await getApplicationSupportDirectory();
@@ -179,7 +179,7 @@ class MediaCacheService {
   }
 }
 
-/// Global warm-up called during [main] before [runApp].
+/// Global warm-up called during `main` before `runApp`.
 Future<void> initMediaCache() async {
   if (kIsWeb) {
     return;
