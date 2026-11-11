@@ -199,6 +199,7 @@ Future<void> initMediaCache() async {
 final mediaCacheServiceProvider = Provider<MediaCacheService>((ref) {
   final client = ref.watch(authenticatedHttpClientProvider);
   final service = MediaCacheService(client: client);
-  service.init();
+  // Warm the directory; failures are non-fatal, downloadMedia retries lazily.
+  service.init().then((_) {}, onError: (Object _) {});
   return service;
 });
