@@ -47,7 +47,12 @@ typedef ProbeResult = ({bool reachable, String reason});
 /// so the test runner doesn't make real network calls.
 @visibleForTesting
 Future<ProbeResult> Function(Uri? probeUri, String? userAgent, Duration timeout) reachabilityCheck =
-    _defaultReachabilityCheck;
+    Platform.environment.containsKey('FLUTTER_TEST')
+        ? (_, _, _) async => (reachable: true, reason: 'test-default')
+        : _defaultReachabilityCheck;
+
+@visibleForTesting
+const defaultReachabilityCheck = _defaultReachabilityCheck;
 
 Future<ProbeResult> _defaultReachabilityCheck(
   Uri? probeUri,

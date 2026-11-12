@@ -20,8 +20,9 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:wger/core/media_cache_service.dart';
+import 'package:wger/core/network/network_provider.dart';
 import 'package:wger/core/network/wger_base.dart';
-import 'package:wger/core/widgets/image.dart';
+import 'package:wger/core/widgets/offline_media_placeholder.dart';
 import 'package:wger/core/widgets/progress_indicator.dart';
 
 /// Displays a server-hosted image with disk + memory caching.
@@ -89,7 +90,14 @@ class WgerImage extends ConsumerWidget {
             case LoadState.loading:
               return _sized(placeholder ?? const CenteredProgressIndicator());
             case LoadState.failed:
-              return _sized(errorWidget ?? const ImageError('Failed to load local media'));
+              return _sized(
+                errorWidget ??
+                    OfflineMediaPlaceholder(
+                      width: width,
+                      height: height,
+                      borderRadius: borderRadius,
+                    ),
+              );
             case LoadState.completed:
               return null;
           }
@@ -98,9 +106,31 @@ class WgerImage extends ConsumerWidget {
       return _wrapClip(fileImage);
     }
 
+    final isOnline = ref.watch(networkStatusProvider);
+    if (!isOnline && mediaPath != null && mediaPath!.trim().isNotEmpty) {
+      return _wrapClip(
+        _sized(
+          OfflineMediaPlaceholder(
+            width: width,
+            height: height,
+            borderRadius: borderRadius,
+          ),
+        ),
+      );
+    }
+
     final url = ref.watch(mediaUrlBuilderProvider)(mediaPath);
     if (url == null) {
-      return _wrapClip(_sized(errorWidget ?? const ImageError('')));
+      return _wrapClip(
+        _sized(
+          errorWidget ??
+              OfflineMediaPlaceholder(
+                width: width,
+                height: height,
+                borderRadius: borderRadius,
+              ),
+        ),
+      );
     }
 
     final image = ExtendedImage.network(
@@ -119,9 +149,10 @@ class WgerImage extends ConsumerWidget {
           case LoadState.failed:
             return _sized(
               errorWidget ??
-                  ImageError(
-                    'Network error',
-                    errorMessage: state.lastException?.toString(),
+                  OfflineMediaPlaceholder(
+                    width: width,
+                    height: height,
+                    borderRadius: borderRadius,
                   ),
             );
           case LoadState.completed:

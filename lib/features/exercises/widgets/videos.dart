@@ -24,8 +24,11 @@ import 'package:video_player/video_player.dart';
 import 'package:wger/core/error_dialogs.dart';
 import 'package:wger/core/exceptions/http_exception.dart';
 import 'package:wger/core/media_cache_service.dart';
+import 'package:wger/core/network/network_provider.dart';
 import 'package:wger/core/network/wger_base.dart';
+import 'package:wger/core/widgets/offline_media_placeholder.dart';
 import 'package:wger/features/exercises/models/video.dart';
+import 'package:wger/l10n/generated/app_localizations.dart';
 
 class ExerciseVideoWidget extends ConsumerStatefulWidget {
   const ExerciseVideoWidget({required this.video});
@@ -60,6 +63,11 @@ class _ExerciseVideoWidgetState extends ConsumerState<ExerciseVideoWidget> {
       return;
     }
 
+    final isOnline = ref.read(networkStatusProvider);
+    if (!isOnline) {
+      return;
+    }
+
     final uri = ref.read(mediaUrlBuilderProvider)(widget.video.video);
     if (uri == null) {
       hasError = true;
@@ -81,6 +89,11 @@ class _ExerciseVideoWidgetState extends ConsumerState<ExerciseVideoWidget> {
       }
 
       logger.warning('PlatformException while initializing video: ${e.message}');
+    } catch (e) {
+      if (mounted) {
+        setState(() => hasError = true);
+      }
+      logger.warning('Exception while initializing video: $e');
     }
   }
 
@@ -92,18 +105,39 @@ class _ExerciseVideoWidgetState extends ConsumerState<ExerciseVideoWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isOnline = ref.watch(networkStatusProvider);
+    final cachedFile = ref.watch(mediaCacheServiceProvider).getCachedFile(widget.video.video);
+
+    if (cachedFile == null && !isOnline) {
+      return AspectRatio(
+        aspectRatio: 16 / 9,
+        child: OfflineMediaPlaceholder(
+          icon: Icons.videocam_off,
+          message: AppLocalizations.of(context).videoNotAvailableOffline,
+        ),
+      );
+    }
+
     _ensureController();
     final controller = _controller;
     return hasError || controller == null
-        ? FormHttpErrorsWidget(
-            WgerHttpException.fromMap(
-              const {
-                'error':
-                    'An error happened while loading the video. If you can, '
-                    'please check the application logs.',
-              },
-            ),
-          )
+        ? (!isOnline
+              ? AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: OfflineMediaPlaceholder(
+                    icon: Icons.videocam_off,
+                    message: AppLocalizations.of(context).videoNotAvailableOffline,
+                  ),
+                )
+              : FormHttpErrorsWidget(
+                  WgerHttpException.fromMap(
+                    const {
+                      'error':
+                          'An error happened while loading the video. If you can, '
+                          'please check the application logs.',
+                    },
+                  ),
+                ))
         : controller.value.isInitialized
         ? AspectRatio(
             aspectRatio: controller.value.aspectRatio,

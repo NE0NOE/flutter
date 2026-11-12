@@ -652,7 +652,7 @@ void main() {
       // iOS fails setting TCP_NODELAY on an already reset connection, which
       // dart:io throws as OSError instead of SocketException (flutter#1397)
       final result = await http.runWithClient(
-        () => originalReachability(probeUri, null, const Duration(seconds: 1)),
+        () => defaultReachabilityCheck(probeUri, null, const Duration(seconds: 1)),
         () => MockClient((_) => throw const OSError('Invalid argument', 22)),
       );
 
