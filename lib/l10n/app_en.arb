@@ -2050,5 +2050,13 @@
       "min": { "type": "int" },
       "max": { "type": "int" }
     }
+  },
+  "mediaNotAvailableOffline": "Not available offline",
+  "@mediaNotAvailableOffline": {
+    "description": "Placeholder text shown when an image or media file is not cached and the device is offline"
+  },
+  "videoNotAvailableOffline": "Video not available offline",
+  "@videoNotAvailableOffline": {
+    "description": "Placeholder text shown when an exercise video is not cached and the device is offline"
   }
 }
