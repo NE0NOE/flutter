@@ -2051,6 +2051,7 @@
       "max": { "type": "int" }
     }
   },
+<<<<<<< HEAD
   "importScript": "Import script",
   "@importScript": {
     "description": "Title and menu entry for the script import screen"
@@ -2113,5 +2114,14 @@
   "importSuccess": "Script imported successfully",
   "@importSuccess": {
     "description": "SnackBar notification confirming the script was imported into the database"
+=======
+  "mediaNotAvailableOffline": "Not available offline",
+  "@mediaNotAvailableOffline": {
+    "description": "Placeholder text shown when an image or media file is not cached and the device is offline"
+  },
+  "videoNotAvailableOffline": "Video not available offline",
+  "@videoNotAvailableOffline": {
+    "description": "Placeholder text shown when an exercise video is not cached and the device is offline"
+>>>>>>> feat/offline-mode
   }
 }

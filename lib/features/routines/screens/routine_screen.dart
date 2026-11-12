@@ -16,42 +16,70 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:wger/core/network/network_provider.dart';
 import 'package:wger/core/wide_screen_wrapper.dart';
 import 'package:wger/core/widgets/async_value_widget.dart';
 import 'package:wger/core/widgets/error.dart';
 import 'package:wger/core/widgets/object_gone_redirect.dart';
+import 'package:wger/features/routines/models/routine.dart';
 import 'package:wger/features/routines/providers/routines_notifier.dart';
 import 'package:wger/features/routines/widgets/app_bar.dart';
 import 'package:wger/features/routines/widgets/routine_detail.dart';
 
-class RoutineScreen extends ConsumerWidget {
+class RoutineScreen extends ConsumerStatefulWidget {
   const RoutineScreen({super.key});
 
   static const routeName = '/routine-detail';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RoutineScreen> createState() => _RoutineScreenState();
+}
+
+class _RoutineScreenState extends ConsumerState<RoutineScreen> {
+  int? _prefetchedRoutineId;
+
+  void _triggerPrefetchIfNeeded(Routine routine, bool isOnline) {
+    if (isOnline && routine.isHydrated && _prefetchedRoutineId != routine.id) {
+      _prefetchedRoutineId = routine.id;
+      unawaited(ref.read(routinesRiverpodProvider.notifier).prefetchRoutineMedia(routine));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final routineId = ModalRoute.of(context)!.settings.arguments as int;
+    final isOnline = ref.watch(networkStatusProvider);
+    final asyncState = ref.watch(routinesRiverpodProvider);
+
+    final routine = asyncState.value?.findByIdOrNull(routineId);
+    if (isOnline && routine != null && !routine.isHydrated) {
+      ref.watch(routineHydrationProvider(routineId));
+    }
+    if (routine != null) {
+      _triggerPrefetchIfNeeded(routine, isOnline);
+    }
 
     return AsyncValueWidget<RoutinesState>(
-      value: ref.watch(routinesRiverpodProvider),
+      value: asyncState,
       loggerName: 'RoutineScreen',
       loading: const Scaffold(body: Center(child: CircularProgressIndicator())),
       errorBuilder: (e, st) => Scaffold(
         body: Center(child: StreamErrorIndicator(e, stacktrace: st)),
       ),
       data: (state) {
-        final routine = state.findByIdOrNull(routineId);
-        if (routine == null) {
+        final currentRoutine = state.findByIdOrNull(routineId);
+        if (currentRoutine == null) {
           return objectGoneRedirect(context);
         }
         return Scaffold(
-          appBar: RoutineDetailAppBar(routine),
+          appBar: RoutineDetailAppBar(currentRoutine),
           body: WidescreenWrapper(
             child: SingleChildScrollView(
-              child: RoutineDetail(routine),
+              child: RoutineDetail(currentRoutine),
             ),
           ),
         );

@@ -199,7 +199,10 @@ Future<void> initMediaCache() async {
 final mediaCacheServiceProvider = Provider<MediaCacheService>((ref) {
   final client = ref.watch(authenticatedHttpClientProvider);
   final service = MediaCacheService(client: client);
-  // Warm the directory; failures are non-fatal, downloadMedia retries lazily.
-  service.init().then((_) {}, onError: (Object _) {});
+  // Warm the directory in production; in widget tests without path_provider mocks,
+  // skip the unawaited channel call so pending timers don't leak.
+  if (!Platform.environment.containsKey('FLUTTER_TEST')) {
+    service.init().then((_) {}, onError: (Object _) {});
+  }
   return service;
 });

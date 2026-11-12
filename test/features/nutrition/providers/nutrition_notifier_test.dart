@@ -20,6 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:wger/features/nutrition/models/log.dart';
 import 'package:wger/features/nutrition/models/meal.dart';
 import 'package:wger/features/nutrition/models/meal_item.dart';
 import 'package:wger/features/nutrition/models/nutritional_plan.dart';
@@ -85,6 +86,8 @@ void main() {
     when(mockRepo.addMealItemLocalDrift(any)).thenAnswer((_) async => Future.value());
     when(mockRepo.editMealItemLocalDrift(any)).thenAnswer((_) async => Future.value());
     when(mockRepo.deleteMealItemLocalDrift(any)).thenAnswer((_) async => Future.value());
+    when(mockRepo.addLogLocalDrift(any)).thenAnswer((_) async => Future.value());
+    when(mockRepo.deleteLogLocalDrift(any)).thenAnswer((_) async => Future.value());
 
     when(mockIngredientRepo.getById(any)).thenAnswer((_) async => null);
   });
@@ -328,6 +331,74 @@ void main() {
       await container.read(nutritionProvider.notifier).deleteMealItem(item);
 
       verify(mockRepo.deleteMealItemLocalDrift(itemUuid)).called(1);
+    });
+  });
+
+  group('nutrition diary write operations', () {
+    const mealUuid = 'aa000000-0000-4000-8000-000000000001';
+    const logUuid = 'dd000000-0000-4000-8000-000000000001';
+
+    test('logMealToDiary iterates meal items and writes each to Drift locally', () async {
+      final meal = Meal(
+        id: mealUuid,
+        plan: planUuid1,
+        name: 'Lunch',
+        mealItems: [
+          MealItem(ingredientId: 1, amount: 150),
+          MealItem(ingredientId: 2, amount: 200),
+        ],
+      );
+      final mealDateTime = DateTime.utc(2026, 4, 15, 12, 30);
+      final container = makeContainer();
+
+      await container.read(nutritionProvider.notifier).logMealToDiary(meal, mealDateTime);
+
+      final captured = verify(mockRepo.addLogLocalDrift(captureAny)).captured;
+      expect(captured, hasLength(2));
+      final firstLog = captured[0] as LogItem;
+      final secondLog = captured[1] as LogItem;
+
+      expect(firstLog.planId, planUuid1);
+      expect(firstLog.mealId, mealUuid);
+      expect(firstLog.ingredientId, 1);
+      expect(firstLog.amount, 150);
+      expect(firstLog.datetime, mealDateTime);
+
+      expect(secondLog.planId, planUuid1);
+      expect(secondLog.mealId, mealUuid);
+      expect(secondLog.ingredientId, 2);
+      expect(secondLog.amount, 200);
+      expect(secondLog.datetime, mealDateTime);
+    });
+
+    test('logIngredientToDiary writes single ingredient to Drift locally', () async {
+      final item = MealItem(ingredientId: 3, amount: 80);
+      final logDateTime = DateTime.utc(2026, 4, 15, 16);
+      final container = makeContainer();
+
+      await container
+          .read(nutritionProvider.notifier)
+          .logIngredientToDiary(
+            item,
+            planUuid1,
+            logDateTime,
+            mealUuid,
+          );
+
+      final captured = verify(mockRepo.addLogLocalDrift(captureAny)).captured.single as LogItem;
+      expect(captured.planId, planUuid1);
+      expect(captured.mealId, mealUuid);
+      expect(captured.ingredientId, 3);
+      expect(captured.amount, 80);
+      expect(captured.datetime, logDateTime);
+    });
+
+    test('deleteLog delegates to deleteLogLocalDrift by id', () async {
+      final container = makeContainer();
+
+      await container.read(nutritionProvider.notifier).deleteLog(logUuid);
+
+      verify(mockRepo.deleteLogLocalDrift(logUuid)).called(1);
     });
   });
 }
