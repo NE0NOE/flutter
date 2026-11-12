@@ -48,6 +48,20 @@ class _StreamRoutinesRiverpod extends RoutinesRiverpod {
   Stream<RoutinesState> build() => _stream;
 }
 
+class _PrefetchTrackingRoutinesRiverpod extends RoutinesRiverpod {
+  _PrefetchTrackingRoutinesRiverpod(this._routines);
+  final List<Routine> _routines;
+  final List<int> prefetchedRoutineIds = [];
+
+  @override
+  Stream<RoutinesState> build() => Stream.value(RoutinesState(routines: _routines));
+
+  @override
+  Future<void> prefetchRoutineMedia(Routine routine) async {
+    prefetchedRoutineIds.add(routine.id!);
+  }
+}
+
 void main() {
   installFakeAuthEnvironment();
 
@@ -216,5 +230,87 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('3 day workout'), findsNothing);
     expect(find.byType(TextButton), findsOneWidget);
+  });
+
+  testWidgets('triggers prefetchRoutineMedia when opened online', (tester) async {
+    tester.view.physicalSize = const Size(500, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    final key = GlobalKey<NavigatorState>();
+    final notifier = _PrefetchTrackingRoutinesRiverpod([getTestRoutine()]);
+    final container = ProviderContainer.test(
+      overrides: [
+        networkStatusProvider.overrideWithValue(true),
+        routinesRiverpodProvider.overrideWith(() => notifier),
+      ],
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          navigatorKey: key,
+          home: TextButton(
+            onPressed: () => key.currentState!.push(
+              MaterialPageRoute<void>(
+                settings: const RouteSettings(arguments: 1),
+                builder: (_) => const RoutineScreen(),
+              ),
+            ),
+            child: const SizedBox(),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(TextButton));
+    await tester.pumpAndSettle();
+
+    expect(notifier.prefetchedRoutineIds, [1]);
+  });
+
+  testWidgets('does not trigger prefetchRoutineMedia when opened offline', (tester) async {
+    tester.view.physicalSize = const Size(500, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    final key = GlobalKey<NavigatorState>();
+    final notifier = _PrefetchTrackingRoutinesRiverpod([getTestRoutine()]);
+    final container = ProviderContainer.test(
+      overrides: [
+        networkStatusProvider.overrideWithValue(false),
+        routinesRiverpodProvider.overrideWith(() => notifier),
+      ],
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          navigatorKey: key,
+          home: TextButton(
+            onPressed: () => key.currentState!.push(
+              MaterialPageRoute<void>(
+                settings: const RouteSettings(arguments: 1),
+                builder: (_) => const RoutineScreen(),
+              ),
+            ),
+            child: const SizedBox(),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(TextButton));
+    await tester.pumpAndSettle();
+
+    expect(notifier.prefetchedRoutineIds, isEmpty);
   });
 }
