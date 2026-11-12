@@ -301,8 +301,12 @@ class _ScriptImportScreenState extends ConsumerState<ScriptImportScreen> {
             ],
             if (_validatedPayload != null && _errors.isEmpty) ...[
               Card(
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                color: theme.colorScheme.surfaceContainerHigh,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+                ),
+                
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -310,7 +314,7 @@ class _ScriptImportScreenState extends ConsumerState<ScriptImportScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.verified, color: Colors.green),
+                          Icon(Icons.verified, color: theme.colorScheme.primary),
                           const SizedBox(width: 8),
                           Text(
                             i18n.previewImport,

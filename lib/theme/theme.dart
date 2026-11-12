@@ -20,37 +20,81 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-// Color scheme, please consult
-// * https://pub.dev/packages/flex_color_scheme
-// * https://rydmike.com/flexseedscheme/demo-v1/#/
+// Kinetic Fitness Design System (Stitch MCP Generated)
+// Athletic, high-contrast, data-dense palette for training & nutrition.
 
-const Color wgerPrimaryColor = Color(0xff2a4c7d);
-const Color wgerPrimaryButtonColor = Color(0xff266dd3);
-const Color wgerPrimaryColorLight = Color(0xff94B2DB);
-const Color wgerSecondaryColor = Color(0xffe63946);
-const Color wgerSecondaryColorLight = Color(0xffF6B4BA);
-const Color wgerTertiaryColor = Color(0xFF6CA450);
+/// Electric Emerald: Dynamic progress, completed sets, primary actions.
+const Color wgerPrimaryColor = Color(0xFF0DF5A4);
+const Color wgerPrimaryButtonColor = Color(0xFF0DF5A4);
+const Color wgerPrimaryColorLight = Color(0xFF69FFB8);
+
+/// Cyber Amber: Energy, rest timer alerts, warning states, caloric summaries.
+const Color wgerSecondaryColor = Color(0xFFFFB020);
+const Color wgerSecondaryColorLight = Color(0xFFFFDDAE);
+
+/// Vibrant Rose: High-intensity alerts, critical indicators, fat macros.
+const Color wgerTertiaryColor = Color(0xFFF43F5E);
+
+/// Deep athletic dark surfaces
+const Color wgerDarkBackground = Color(0xFF12151A); // Midnight Carbon
+const Color wgerDarkSurface = Color(0xFF1B2028); // Deep Carbon
+const Color wgerDarkElevated = Color(0xFF252B36); // Elevated Slate
+
+/// Specific semantic tokens for modules (Gym Mode, Nutrition, Dashboard, Script Import)
+abstract class KineticTokens {
+  // Gym Mode & Timer
+  static const Color timerActive = Color(0xFF0DF5A4);
+  static const Color timerRest = Color(0xFFFFB020);
+  static const Color activeSetPill = Color(0xFF003822);
+  static const Color activeSetText = Color(0xFF69FFB8);
+
+  // Nutrition Macros
+  static const Color macroProtein = Color(0xFF0DF5A4);
+  static const Color macroCarbs = Color(0xFFFFB020);
+  static const Color macroFat = Color(0xFFF43F5E);
+  static const Color macroCalories = Color(0xFF38BDF8);
+
+  // Script Import & Terminal
+  static const Color terminalBg = Color(0xFF0A0D12);
+  static const Color terminalBorder = Color(0xFF252B36);
+  static const Color terminalSuccess = Color(0xFF0DF5A4);
+}
 
 const FlexSubThemesData wgerSubThemeData = FlexSubThemesData(
-  fabSchemeColor: SchemeColor.secondary,
-  inputDecoratorBorderType: FlexInputBorderType.underline,
-  inputDecoratorIsFilled: false,
+  fabSchemeColor: SchemeColor.primary,
+  fabUseShape: true,
+  fabRadius: 16.0,
+  cardRadius: 16.0,
+  elevatedButtonRadius: 12.0,
+  filledButtonRadius: 12.0,
+  outlinedButtonRadius: 12.0,
+  textButtonRadius: 12.0,
+  inputDecoratorBorderType: FlexInputBorderType.outline,
+  inputDecoratorRadius: 12.0,
+  inputDecoratorIsFilled: true,
   useMaterial3Typography: true,
-  appBarScrolledUnderElevation: 4,
-  navigationBarIndicatorOpacity: 0.24,
-  navigationBarHeight: 56,
+  appBarScrolledUnderElevation: 2,
+  navigationBarIndicatorOpacity: 1.0,
+  navigationBarHeight: 64,
+  navigationBarIndicatorRadius: 12.0,
+  navigationBarSelectedLabelSchemeColor: SchemeColor.primary,
+  navigationBarSelectedIconSchemeColor: SchemeColor.onPrimary,
+  navigationBarIndicatorSchemeColor: SchemeColor.primary,
+  snackBarRadius: 12.0,
+  dialogRadius: 16.0,
+  timePickerElementRadius: 12.0,
 );
 
 const String wgerDisplayFont = 'RobotoCondensed';
-const List<FontVariation> displayFontBoldWeight = [FontVariation('wght', 600)];
+const List<FontVariation> displayFontBoldWeight = [FontVariation('wght', 700)];
 const List<FontVariation> displayFontHeavyWeight = [FontVariation('wght', 800)];
 
 // Make a light ColorScheme from the seeds.
 final ColorScheme schemeLight = SeedColorScheme.fromSeeds(
-  primary: wgerPrimaryColor,
-  primaryKey: wgerPrimaryColor,
-  secondaryKey: wgerSecondaryColor,
-  secondary: wgerSecondaryColor,
+  primary: const Color(0xFF00A86B), // Slightly deeper emerald for light contrast
+  primaryKey: const Color(0xFF00A86B),
+  secondaryKey: const Color(0xFFD97706),
+  secondary: const Color(0xFFD97706),
   tertiaryKey: wgerTertiaryColor,
   brightness: Brightness.light,
   tones: FlexTones.vivid(Brightness.light),
@@ -58,23 +102,24 @@ final ColorScheme schemeLight = SeedColorScheme.fromSeeds(
 
 // Make a dark ColorScheme from the seeds.
 final ColorScheme schemeDark = SeedColorScheme.fromSeeds(
-  // primary: wgerPrimaryColor,
+  primary: wgerPrimaryColor,
   primaryKey: wgerPrimaryColor,
   secondaryKey: wgerSecondaryColor,
   secondary: wgerSecondaryColor,
+  tertiaryKey: wgerTertiaryColor,
   brightness: Brightness.dark,
   tones: FlexTones.vivid(Brightness.dark),
 );
 
 // Make a high contrast light ColorScheme from the seeds
 final ColorScheme schemeLightHc = SeedColorScheme.fromSeeds(
-  primaryKey: wgerPrimaryColor,
-  secondaryKey: wgerSecondaryColor,
+  primaryKey: const Color(0xFF007A4D),
+  secondaryKey: const Color(0xFFB45309),
   brightness: Brightness.light,
   tones: FlexTones.ultraContrast(Brightness.light),
 );
 
-// Make a ultra contrast dark ColorScheme from the seeds.
+// Make an ultra contrast dark ColorScheme from the seeds.
 final ColorScheme schemeDarkHc = SeedColorScheme.fromSeeds(
   primaryKey: wgerPrimaryColor,
   secondaryKey: wgerSecondaryColor,
@@ -131,6 +176,8 @@ final wgerLightTheme = FlexThemeData.light(
 
 final wgerDarkTheme = FlexThemeData.dark(
   colorScheme: schemeDark,
+  scaffoldBackground: wgerDarkBackground,
+  surface: wgerDarkSurface,
   useMaterial3: true,
   subThemesData: wgerSubThemeData,
   textTheme: wgerTextTheme,
@@ -146,6 +193,7 @@ final wgerLightThemeHc = FlexThemeData.light(
 
 final wgerDarkThemeHc = FlexThemeData.dark(
   colorScheme: schemeDarkHc,
+  scaffoldBackground: Colors.black,
   useMaterial3: true,
   subThemesData: wgerSubThemeData,
   textTheme: wgerTextTheme,
@@ -154,9 +202,6 @@ final wgerDarkThemeHc = FlexThemeData.dark(
 /// Builds a wger theme for [brightness] with the palette generated from [seed],
 /// e.g. the platform's dynamic color. Sub-themes, app bar style and typography
 /// match the fixed themes, so only the hues change.
-///
-/// With [highContrast] the palette is spread over a wider tonal range, matching
-/// the fixed high contrast themes the OS accessibility setting switches to.
 ThemeData wgerThemeFromSeed(
   Color seed,
   Brightness brightness, {
@@ -169,6 +214,7 @@ ThemeData wgerThemeFromSeed(
       brightness: brightness,
       tones: highContrast ? FlexTones.ultraContrast(brightness) : FlexTones.vivid(brightness),
     ),
+    scaffoldBackground: isDark ? wgerDarkBackground : null,
     useMaterial3: true,
     appBarStyle: isDark ? null : FlexAppBarStyle.primary,
     subThemesData: wgerSubThemeData,
@@ -179,17 +225,15 @@ ThemeData wgerThemeFromSeed(
 CalendarStyle getWgerCalendarStyle(ThemeData theme) {
   final scheme = theme.colorScheme;
   final selectedDecoration = BoxDecoration(
-    color: scheme.secondary,
+    color: scheme.primary,
     shape: BoxShape.circle,
   );
-  // table_calendar defaults these to a near-white that only works on a dark
-  // circle, and secondary is light in dark mode.
-  final selectedTextStyle = TextStyle(color: scheme.onSecondary, fontSize: 16);
+  final selectedTextStyle = TextStyle(color: scheme.onPrimary, fontSize: 16);
 
   return CalendarStyle(
     outsideDaysVisible: false,
-    todayDecoration: const BoxDecoration(
-      color: Colors.amber,
+    todayDecoration: BoxDecoration(
+      color: scheme.secondary.withValues(alpha: 0.8),
       shape: BoxShape.circle,
     ),
     markerDecoration: BoxDecoration(
@@ -202,7 +246,7 @@ CalendarStyle getWgerCalendarStyle(ThemeData theme) {
     rangeStartTextStyle: selectedTextStyle,
     rangeEndDecoration: selectedDecoration,
     rangeEndTextStyle: selectedTextStyle,
-    rangeHighlightColor: scheme.secondaryContainer,
+    rangeHighlightColor: scheme.primaryContainer.withValues(alpha: 0.5),
     weekendTextStyle: TextStyle(color: scheme.secondary),
   );
 }

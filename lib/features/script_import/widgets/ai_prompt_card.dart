@@ -34,11 +34,11 @@ class AiPromptCard extends StatelessWidget {
 
     return Card(
       elevation: 1,
-      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+      color: theme.colorScheme.surfaceContainerHigh.withValues(alpha: 0.6),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6),
+          color: theme.colorScheme.primary.withValues(alpha: 0.3),
         ),
       ),
       child: Padding(
