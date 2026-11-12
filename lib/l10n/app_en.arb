@@ -2050,5 +2050,68 @@
       "min": { "type": "int" },
       "max": { "type": "int" }
     }
+  },
+  "importScript": "Import script",
+  "@importScript": {
+    "description": "Title and menu entry for the script import screen"
+  },
+  "aiPromptInstructionTitle": "Generate with AI",
+  "@aiPromptInstructionTitle": {
+    "description": "Header title of the instructional card for generating scripts with AI"
+  },
+  "aiPromptInstructionBody": "Copy this prompt and paste it into ChatGPT, Gemini, or Claude to get a properly formatted workout routine or nutrition plan for wger.",
+  "@aiPromptInstructionBody": {
+    "description": "Instructional text explaining how to use the AI prompt"
+  },
+  "copyAiPrompt": "Copy AI prompt",
+  "@copyAiPrompt": {
+    "description": "Label on the button that copies the AI prompt to the clipboard"
+  },
+  "aiPromptCopied": "AI prompt copied to clipboard",
+  "@aiPromptCopied": {
+    "description": "SnackBar notification shown when the AI prompt is copied"
+  },
+  "pasteJsonHere": "Paste JSON script here",
+  "@pasteJsonHere": {
+    "description": "Label or hint for the script text input field"
+  },
+  "validateScript": "Validate",
+  "@validateScript": {
+    "description": "Label for the validate button on the script import screen"
+  },
+  "scriptErrorsFound": "Found {count, plural, =1{1 error} other{{count} errors}} in script",
+  "@scriptErrorsFound": {
+    "description": "Header indicating how many errors were found in the script",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "scriptIsValid": "Script is valid",
+  "@scriptIsValid": {
+    "description": "Badge or text indicating the script passed all validations"
+  },
+  "previewImport": "Import preview",
+  "@previewImport": {
+    "description": "Title of the preview section summarizing what will be imported"
+  },
+  "saveToDatabase": "Save to database",
+  "@saveToDatabase": {
+    "description": "Button to persist the imported routines and nutrition plans to the local database"
+  },
+  "confirmImportTitle": "Confirm Import",
+  "@confirmImportTitle": {
+    "description": "Title of the confirmation dialog before saving"
+  },
+  "confirmImportBody": "Do you want to import {routineCount, plural, =1{1 routine} other{{routineCount} routines}} and {planCount, plural, =1{1 nutrition plan} other{{planCount} nutrition plans}} into your local database?",
+  "@confirmImportBody": {
+    "description": "Body message in the import confirmation dialog",
+    "placeholders": {
+      "routineCount": { "type": "int" },
+      "planCount": { "type": "int" }
+    }
+  },
+  "importSuccess": "Script imported successfully",
+  "@importSuccess": {
+    "description": "SnackBar notification confirming the script was imported into the database"
   }
 }

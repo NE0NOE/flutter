@@ -76,6 +76,7 @@ import 'package:wger/features/routines/screens/routine_list_screen.dart';
 import 'package:wger/features/routines/screens/routine_logs_screen.dart';
 import 'package:wger/features/routines/screens/routine_screen.dart';
 import 'package:wger/features/routines/screens/settings_plates_screen.dart';
+import 'package:wger/features/script_import/screens/script_import_screen.dart';
 import 'package:wger/features/trophies/screens/trophy_screen.dart';
 import 'package:wger/l10n/generated/app_localizations.dart';
 import 'package:wger/l10n/localizations_delegates.dart';
@@ -308,6 +309,7 @@ class MainApp extends ConsumerWidget {
                 ConfigureDashboardWidgetsScreen.routeName: (ctx) =>
                     const ConfigureDashboardWidgetsScreen(),
                 TrophyScreen.routeName: (ctx) => const TrophyScreen(),
+                ScriptImportScreen.routeName: (ctx) => const ScriptImportScreen(),
               },
               localeListResolutionCallback: resolveLocale,
               localizationsDelegates: appLocalizationsDelegates,

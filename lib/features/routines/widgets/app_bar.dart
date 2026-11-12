@@ -25,11 +25,13 @@ import 'package:wger/features/routines/models/routine.dart';
 import 'package:wger/features/routines/providers/routines_notifier.dart';
 import 'package:wger/features/routines/screens/routine_edit_screen.dart';
 import 'package:wger/features/routines/screens/routine_logs_screen.dart';
+import 'package:wger/features/script_import/screens/script_import_screen.dart';
 import 'package:wger/l10n/generated/app_localizations.dart';
 
 enum _RoutineAppBarOptions {
   list,
   contribute,
+  importScript,
 }
 
 enum _RoutineDetailBarOptions {
@@ -49,9 +51,18 @@ class RoutineListAppBar extends ConsumerWidget implements PreferredSizeWidget {
     return AppBar(
       title: Text(i18n.routines),
       actions: [
+        IconButton(
+          icon: const Icon(Icons.file_upload_outlined),
+          tooltip: i18n.importScript,
+          onPressed: () => Navigator.of(context).pushNamed(ScriptImportScreen.routeName),
+        ),
         PopupMenuButton(
           itemBuilder: (context) {
             return [
+              PopupMenuItem<_RoutineAppBarOptions>(
+                value: _RoutineAppBarOptions.importScript,
+                child: Text(i18n.importScript),
+              ),
               PopupMenuItem<_RoutineAppBarOptions>(
                 value: _RoutineAppBarOptions.list,
                 child: Text(i18n.exerciseList),
@@ -78,6 +89,9 @@ class RoutineListAppBar extends ConsumerWidget implements PreferredSizeWidget {
           },
           onSelected: (value) {
             switch (value) {
+              case _RoutineAppBarOptions.importScript:
+                Navigator.of(context).pushNamed(ScriptImportScreen.routeName);
+                break;
               case _RoutineAppBarOptions.contribute:
                 Navigator.of(context).pushNamed(AddExerciseScreen.routeName);
                 break;
